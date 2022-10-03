@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<DataLoad>
+	<person>
+		<Id>1</Id>
+		<Name>First Person</Name>
+	</person>
+	<person>
+		<Id>2</Id>
+		<Name>Second Person</Name>
+	</person>
+</DataLoad>

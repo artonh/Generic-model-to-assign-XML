@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Firstnamespace\202001011000_person.xml" />
+    <None Remove="Firstnamespace\202001011005_person.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Firstnamespace\202001011005_person.xml" />
+    <EmbeddedResource Include="Firstnamespace\202001011000_person.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Secondnamespace\" />
+  </ItemGroup>
+
+</Project>
