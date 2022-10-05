@@ -16,12 +16,26 @@ namespace RunMigration.Migrations
     [Migration(202001011000)] //yyyyMMddhhmm
     public class _202001011000_Person : BaseMigration
     {
-         
+
     }
 
-    [Migration(202001011005)] 
+    [Migration(202001011005)]
     public class _202001011005_Person : BaseMigration
     {
 
+    }
+
+
+    [Migration(202001011006)]
+    public class _202001011006_Person : SpecialMigration
+    {
+        //to replace the placeholders in the XML files
+
+        public _202001011006_Person() : base(
+                new Dictionary<string, string>() { {"###{date}###", DateTime.Now.AddDays(-2).ToString() }
+            })
+        {
+
+        }
     }
 }

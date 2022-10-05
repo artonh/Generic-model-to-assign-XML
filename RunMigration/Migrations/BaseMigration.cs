@@ -2,6 +2,7 @@
 using FluentMigrator.SqlServer;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -54,9 +55,8 @@ namespace RunMigration.Migrations
 
                 using (Stream xmlStream = asm.GetManifestResourceStream(resourceName))
                 {
-                    var dataTable = Utilities.XML_LoadData(
-                        XDocument.Parse(new StreamReader(xmlStream).ReadToEnd().Trim()), FileName);
-                    
+                    DataTable dataTable = XML2Datatable(xmlStream);
+
                     Execute.Sql(string.Format("IF (SELECT OBJECTPROPERTY(OBJECT_ID('{0}'), 'TableHasIdentity'))=1 BEGIN SET IDENTITY_INSERT {0} ON; END ELSE BEGIN PRINT 1; END", FileName));
                     Execute.Sql(Utilities.TSQL_CreateInsertStatement(dataTable));
                     Execute.Sql(string.Format("IF (SELECT OBJECTPROPERTY(OBJECT_ID('{0}'), 'TableHasIdentity'))=1 BEGIN SET IDENTITY_INSERT {0} OFF; END ELSE BEGIN PRINT 1; END", FileName));
@@ -66,6 +66,11 @@ namespace RunMigration.Migrations
             }
             else
                 Console.WriteLine($"Resource '{ClassName}' cannot be found!");
+        }
+
+        protected virtual DataTable XML2Datatable(Stream xmlStream)
+        { 
+            return Utilities.XML_LoadData(XDocument.Parse(new StreamReader(xmlStream).ReadToEnd().Trim()), FileName);
         }
 
         public override void Down()
