@@ -58,7 +58,10 @@ namespace RunMigration.Migrations
                     DataTable dataTable = XML2Datatable(xmlStream);
 
                     Execute.Sql(string.Format("IF (SELECT OBJECTPROPERTY(OBJECT_ID('{0}'), 'TableHasIdentity'))=1 BEGIN SET IDENTITY_INSERT {0} ON; END ELSE BEGIN PRINT 1; END", FileName));
-                    Execute.Sql(Utilities.TSQL_CreateInsertStatement(dataTable));
+                    foreach (var item in Utilities.TSQL_CreateInsertStatement(dataTable))
+                    {
+                        Execute.Sql(item);
+                    } 
                     Execute.Sql(string.Format("IF (SELECT OBJECTPROPERTY(OBJECT_ID('{0}'), 'TableHasIdentity'))=1 BEGIN SET IDENTITY_INSERT {0} OFF; END ELSE BEGIN PRINT 1; END", FileName));
 
                     Console.WriteLine($"Executed rows at the {FileName}!");

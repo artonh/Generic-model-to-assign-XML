@@ -17,45 +17,84 @@ namespace RunMigration
             return Assembly.LoadFile(assemblyToLoad);
         }
 
-        public static string TSQL_CreateInsertStatement(DataTable dt)
+        public static string[] TSQL_CreateInsertStatement(DataTable dt, int maxRow2Seperate = 200)
         {
-            StringBuilder sqlInsert = new StringBuilder();
+
             int rows = dt.Rows.Count;
+            string[] result = new string[System.Math.Abs(rows / maxRow2Seperate) + 2];
 
             if (rows > 0)
             {
+                StringBuilder sqlInsert = new StringBuilder();
+
                 int totalCols = dt.Columns.Count;
                 int cols = totalCols;
 
                 sqlInsert.Append($"INSERT INTO [{dt.TableName}] (");
-                List<string> lsValues = new List<string> { };
                 foreach (DataColumn colname in dt.Columns)
-                    lsValues.Add(colname.ColumnName);
+                {
+                    sqlInsert.Append(colname.ColumnName);
+                    cols--;
+                    if (cols > 0)
+                        sqlInsert.Append(",");
+                    else
+                        sqlInsert.AppendLine(")");
+                }
+                //---header values
 
-                sqlInsert.Append(string.Join(",", lsValues) + ") VALUES(");
+                //split in more insertion
+                maxRow2Seperate--;
 
-                List<string> lsRows = new List<string>();
+                int insertedRows = 0, executedSlots = 0;
+                StringBuilder sqlInsertSepartion = new StringBuilder();
+                sqlInsertSepartion.Append(sqlInsert);
 
                 foreach (DataRow row in dt.Rows)
                 {
-                    lsValues = new List<string>();
+                    cols = totalCols;
+                    bool isEven = insertedRows % maxRow2Seperate == 0;
+                    bool executeMid = insertedRows != 0 && isEven,
+                         executeEnd = executedSlots != 0 && isEven;
+                    insertedRows++;
+
+                    sqlInsertSepartion.Append("SELECT ");
 
                     foreach (DataColumn col in dt.Columns)
                     {
-                        var type = col.DataType; //Int32
-                        lsValues.Add($"'{row[col.ColumnName]}'");
+                        sqlInsertSepartion.Append($"'{row[col.ColumnName].ToString().Replace("'", "''")}'");
+                        cols--;
+                        if (cols > 0)
+                            sqlInsertSepartion.Append(",");
+                    }
+                    rows--;
+                    if (rows > 0 && !executeMid && !executeEnd)
+                        sqlInsertSepartion.AppendLine(" UNION ALL");
+                    else
+                    {
+                        if (rows == 0)
+                            executeEnd = true;
                     }
 
-                    lsRows.Add(string.Join(",", lsValues));
-                }
+                    if (executeMid)
+                    {
+                        result[executedSlots] = sqlInsertSepartion.ToString();
 
-                sqlInsert.Append($"{string.Join("), (", lsRows)})");
+                        executedSlots++;
+
+                        sqlInsertSepartion = new StringBuilder();
+                        sqlInsertSepartion.Append(sqlInsert);//header values
+                    }
+                    else if (executeEnd)
+                    {
+                        result[executedSlots] = sqlInsertSepartion.ToString();
+                    }
+
+                }
 
             }
 
-            return sqlInsert.ToString();
+            return result;
         }
-
 
         public static DataTable XML_LoadData(string tableNameWithVersion, string tableName)
         {
